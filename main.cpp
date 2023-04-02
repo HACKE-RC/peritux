@@ -6,8 +6,13 @@ std::string returnArch(const int machineArch);
 void parseFileHeader(IMAGE_FILE_HEADER& ImgFileHeader);
 void parseOptionalHeader(IMAGE_OPTIONAL_HEADER& ImgOptionalHeader);
 
-int main(){
-    HANDLE hFile = CreateFile("imp.exe", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+int main(int argc, char* argv[]){
+    if (argc < 2){
+       std::cout << "Please provide the filename!" << std::endl;
+       return -1;
+    }
+
+    HANDLE hFile = CreateFile(argv[1], GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
     if (hFile == INVALID_HANDLE_VALUE){
         std::cout << "[ERR] The provided file does not exist!" << std::endl;
@@ -107,6 +112,5 @@ void parseOptionalHeader(IMAGE_OPTIONAL_HEADER& ImgOptionalHeader){
     std::cout << "Size of Code section: " << returnImageType(ImgOptionalHeader.SizeOfCode) << std::endl;
     std::cout << "Image size: " << returnImageType(ImgOptionalHeader.SizeOfImage) << std::endl;
     std::cout << "Header size: " << ImgOptionalHeader.SizeOfHeaders << std::endl;
-    std::cout << "Subsystem: " << returnImageSubsystem(ImgOptionalHeader.Subsystem) << std::endl;
     std::cout << "Subsystem: " << returnImageSubsystem(ImgOptionalHeader.Subsystem) << std::endl;
 }
