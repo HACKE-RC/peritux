@@ -1,16 +1,18 @@
 #include <iostream>
 #include <windows.h>
 #include <iomanip>
+#include <vector>
 
 std::string returnArch(const int machineArch);
 void parseFileHeader(IMAGE_FILE_HEADER& ImgFileHeader);
 void parseOptionalHeader(IMAGE_OPTIONAL_HEADER& ImgOptionalHeader);
+void parseSectionHeaders(IMAGE_SECTION_HEADER* pImgSectionHeader, WORD& ImgNoOfSections);
 
 int main(int argc, char* argv[]){
-    if (argc < 2){
-       std::cout << "Please provide the filename!" << std::endl;
-       return -1;
-    }
+   if (argc != 2){
+      std::cout << "Please provide the filename!" << std::endl;
+      return -1;
+   }
 
     HANDLE hFile = CreateFile(argv[1], GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -50,6 +52,11 @@ int main(int argc, char* argv[]){
 
     IMAGE_FILE_HEADER ImgFileHeader = (IMAGE_FILE_HEADER)(pNtHeaders->FileHeader);
     IMAGE_OPTIONAL_HEADER ImgOptionalHeader = (IMAGE_OPTIONAL_HEADER)(pNtHeaders->OptionalHeader);
+
+    WORD ImgTotalSections = ImgFileHeader.NumberOfSections;
+    PIMAGE_SECTION_HEADER pImgSectionHeader = IMAGE_FIRST_SECTION(pNtHeaders);
+
+    parseSectionHeaders(pImgSectionHeader, ImgTotalSections);
 
     std::cout << "Signature: 0x" << std::hex << pNtHeaders->Signature << std::endl;
     parseFileHeader(ImgFileHeader);
@@ -98,7 +105,7 @@ std::string returnImageSubsystem(const int subsysNumber){
 }
 
 void parseFileHeader(IMAGE_FILE_HEADER& ImgFileHeader){
-    std::cout << "Architecutre: " << returnArch(ImgFileHeader.Machine) << std::endl;
+    std::cout << "Architecture: " << returnArch(ImgFileHeader.Machine) << std::endl;
     std::cout << "Size of Section Table: " << ImgFileHeader.NumberOfSections << std::endl;
     std::cout << "Size of Optional Header: 0x" << ImgFileHeader.SizeOfOptionalHeader << std::endl;
     std::cout << "Relocs stripped: " << std::boolalpha << ((ImgFileHeader.Characteristics & IMAGE_FILE_RELOCS_STRIPPED) != 0) << std::endl;
@@ -113,4 +120,20 @@ void parseOptionalHeader(IMAGE_OPTIONAL_HEADER& ImgOptionalHeader){
     std::cout << "Image size: " << returnImageType(ImgOptionalHeader.SizeOfImage) << std::endl;
     std::cout << "Header size: " << ImgOptionalHeader.SizeOfHeaders << std::endl;
     std::cout << "Subsystem: " << returnImageSubsystem(ImgOptionalHeader.Subsystem) << std::endl;
+}
+
+void parseSectionHeaders(IMAGE_SECTION_HEADER* pImgSectionHeader, WORD& ImgNoOfSections){
+
+    for (int i = 0; i < ImgNoOfSections; i++) {
+        std::cout << i+1 << ". " << pImgSectionHeader->Name << std::endl;
+        std::cout << "\tVirtual Size: " << pImgSectionHeader->Misc.VirtualSize << std::endl;
+        std::cout << "\tRaw Data Size: " << pImgSectionHeader->SizeOfRawData << std::endl;
+        std::cout << "\tCharacteristics: " << std::endl;
+        std::cout << "\t\tMEM_READ: " << std::boolalpha << ((pImgSectionHeader->Characteristics & IMAGE_SCN_MEM_READ) != 0)<< std::endl;
+        std::cout << "\t\tMEM_EXECUTE: " << std::boolalpha << ((pImgSectionHeader->Characteristics & IMAGE_SCN_MEM_EXECUTE) != 0)<< std::endl;
+        std::cout << "\t\tMEM_SHARED: " << std::boolalpha << ((pImgSectionHeader->Characteristics & IMAGE_SCN_MEM_SHARED) != 0)<< std::endl;
+        std::cout << "\t\tCNT_CODE: " << std::boolalpha << ((pImgSectionHeader->Characteristics & IMAGE_SCN_CNT_CODE) != 0)<< std::endl;
+        pImgSectionHeader++;
+    }
+
 }
