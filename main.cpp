@@ -14,12 +14,12 @@ void parseExports(PIMAGE_DATA_DIRECTORY pImageDataDirectory, WORD& ImgTotalSecti
 bool isDLL = false;
 
 int main(int argc, char* argv[]){
-//    if (argc != 2){
-//       std::cout << "Please provide the filename!" << std::endl;
-//       return -1;
-//    }
+   if (argc != 2){
+      std::cout << "Please provide the filename!" << std::endl;
+      return -1;
+   }
 
-    HANDLE hFile = CreateFile("C:\\Windows\\System32\\iri.dll", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hFile = CreateFile(argv[1], GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
     if (hFile == INVALID_HANDLE_VALUE){
         std::cout << "[ERR] The provided file does not exist!" << std::endl;
@@ -181,7 +181,7 @@ void parseImports(PIMAGE_DATA_DIRECTORY pImageDataDirectory, WORD& ImgTotalSecti
         pImgImportDescriptor++;
         totalDirectory++;
     }
-    std::cout << "Total Imports: " << totalDirectory << std::endl;
+    std::cout << "Total Imports: " << totalDirectory+1 << std::endl;
 
     pImgImportDescriptor = pTemp;
 
